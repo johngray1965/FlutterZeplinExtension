@@ -1,0 +1,29 @@
+{
+  "name": "flutter_extension",
+  "version": "0.1.0",
+  "description": "Sample extension description.",
+  "scripts": {
+    "start": "zem start",
+    "build": "zem build",
+    "clean": "zem clean",
+    "exec": "zem exec"
+  },
+  "zeplin": {
+    "displayName": "flutter_extension",
+    "projectTypes": [
+      "web"
+    ],
+    "options": [
+      {
+        "name": "Color/Style class name Prefix",
+        "type": "text",
+        "id": "classPrefix",
+        "default": ""
+      }
+    ]
+
+  },
+  "dependencies": {
+    "zem": "^0.1.2"
+  }
+}
