@@ -1,7 +1,7 @@
 {
   "name": "flutter_extension",
   "version": "0.1.0",
-  "description": "Sample extension description.",
+  "description": "Flutter extension of zeplin.",
   "scripts": {
     "start": "zem start",
     "build": "zem build",
