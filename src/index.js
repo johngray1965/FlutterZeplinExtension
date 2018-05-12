@@ -120,7 +120,7 @@ function getStyle(context, style, force) {
             elements.push(`    fontSize: ${style.fontSize.toFixed(1)}`);
         }
 
-        return `TextStyle(
+        return `const TextStyle(
 ${elements.join(",\n")}
   )`;
     }
@@ -136,7 +136,7 @@ function camelize(str) {
 function getStylebuildTextStyles(context, styles) {
 	return styles.map(style => {
 
-		return `  static final ${camelize(style.name)} = ${getStyle(context, style, true)}`;
+		return `  static const ${camelize(style.name)} = ${getStyle(context, style, true)}`;
 	});
 }
 
@@ -173,7 +173,7 @@ function exportStyleguideColors(context, colors) {
     var codeObject = styleguideColors(context, colors);
     var innerCode = codeObject.code;
 
-    var code = `import 'dart:ui';
+    var code = `import 'package:flutter/material.dart';
 
 class ${getColorClassName(context)} {
         
