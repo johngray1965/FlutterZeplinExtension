@@ -120,7 +120,7 @@ function getStyle(context, style, force) {
             elements.push(`    fontSize: ${style.fontSize.toFixed(1)}`);
         }
 
-        return `const TextStyle(
+        return `TextStyle(
 ${elements.join(",\n")}
   )`;
     }
@@ -136,7 +136,7 @@ function camelize(str) {
 function getStylebuildTextStyles(context, styles) {
 	return styles.map(style => {
 
-		return `  static const ${camelize(style.name)} = ${getStyle(context, style, true)}`;
+		return `  static final ${camelize(style.name)} = ${getStyle(context, style, true)}`;
 	});
 }
 
@@ -173,7 +173,9 @@ function exportStyleguideColors(context, colors) {
     var codeObject = styleguideColors(context, colors);
     var innerCode = codeObject.code;
 
-    var code = `class ${getColorClassName(context)} {
+    var code = `import 'dart:ui';
+
+class ${getColorClassName(context)} {
         
 ${innerCode}
         
@@ -191,7 +193,9 @@ function exportStyleguideTextStyles(context, textstyles) {
     var codeObject = styleguideTextStyles(context, textstyles);
     var innerCode = codeObject.code;
 
-    var code = `class ${getStyleClassName(context)} {
+    var code = `import 'dart:ui';
+
+class ${getStyleClassName(context)} {
         
     ${innerCode}
     
