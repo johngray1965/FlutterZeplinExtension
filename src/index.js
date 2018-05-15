@@ -43,13 +43,12 @@ function layer(context, layer) {
     style: ${style});`;
 
          }
+
+         return {
+             code: code,
+             language: "dart"
+         };
     }
-
-    return {
-        code: code,
-        language: "dart"
-    };
-
 }
 
 function toHex(num) {
@@ -162,7 +161,7 @@ function styleguideTextStyles(context, styles) {
 //    var code = JSON.stringify(styles, null, 2)
 	var styleguideStyles = getStylebuildTextStyles(context, styles);
 	var code =  `${styleguideStyles.join(";\n\n")};`;
-    
+
      return {
         code: code,
         language: "dart"
@@ -176,9 +175,9 @@ function exportStyleguideColors(context, colors) {
     var code = `import 'package:flutter/material.dart';
 
 class ${getColorClassName(context)} {
-        
+
 ${innerCode}
-        
+
 }
 `;
 
@@ -196,12 +195,12 @@ function exportStyleguideTextStyles(context, textstyles) {
     var code = `import 'dart:ui';
 
 class ${getStyleClassName(context)} {
-        
+
     ${innerCode}
-    
+
 }
 `;
-    
+
     return {
         code: code,
         filename: `${getStyleClassName(context)}.dart`,
