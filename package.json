@@ -1,7 +1,7 @@
 {
   "name": "flutter_extension",
   "version": "0.1.1",
-  "description": "Flutter extension of zeplin.",
+  "description": "Generates Flutter classes from colors, text styles and text layers code",
   "scripts": {
     "start": "zem start",
     "build": "zem build",
@@ -9,7 +9,7 @@
     "exec": "zem exec"
   },
   "zeplin": {
-    "displayName": "flutter_extension",
+    "displayName": "Flutter",
     "projectTypes": [
       "android",
       "ios"
