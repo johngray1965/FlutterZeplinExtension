@@ -43,6 +43,8 @@ function layer(context, layer) {
     style: ${style});`;
 
          }
+    // } else {
+    //     code = JSON.stringify(layer);
     }
 
     return {
@@ -117,7 +119,7 @@ function getStyle(context, style, force) {
         }
 
         if ('fontSize' in style) {
-            elements.push(`    fontSize: ${style.fontSize.toFixed(1)}`);
+            elements.push(`    fontSize: ${(style.fontSize/2).toFixed(1)}`);
         }
 
         return `const TextStyle(
