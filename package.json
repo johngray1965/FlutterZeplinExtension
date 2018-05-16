@@ -11,7 +11,8 @@
   "zeplin": {
     "displayName": "flutter_extension",
     "projectTypes": [
-      "web"
+      "android",
+      "ios"
     ],
     "options": [
       {

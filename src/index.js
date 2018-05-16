@@ -144,7 +144,7 @@ function getColorClassName(context) {
     if (prefix && prefix !== "") {
         return `${prefix}Colors`;
     } else {
-        return "colors";
+        return "Colors";
     }
 }
 
@@ -153,7 +153,7 @@ function getStyleClassName(context) {
     if (prefix && prefix !== "") {
         return `${prefix}Styles`;
     } else {
-        return "styles";
+        return "Styles";
     }
 }
 
