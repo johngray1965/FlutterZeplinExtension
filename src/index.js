@@ -96,6 +96,8 @@ function getStyle(context, style, force) {
 	    return `${getStyleClassName(context)}.${camelize(projectStyle.name)}`
 	} else {
 
+        var divisor = context.project.densityDivisor;
+
         var elements = [];
 
         //return JSON.stringify(style, null, 2)
@@ -116,7 +118,7 @@ function getStyle(context, style, force) {
         }
 
         if ('fontSize' in style) {
-            elements.push(`    fontSize: ${(style.fontSize/2).toFixed(1)}`);
+            elements.push(`    fontSize: ${(style.fontSize/divisor).toFixed(1)}`);
         }
 
         return `const TextStyle(

@@ -69,7 +69,9 @@ Prefixes the default color and style class names.
 
 ## Development
 
-React Native extension is developed using [zem](https://github.com/zeplin/zem), Zeplin Extension Manager. zem is a command line tool that lets you quickly create and test extensions.
+Flutter extension is developed using [zem](https://github.com/zeplin/zem), Zeplin Extension Manager. zem is a command line tool that lets you quickly create and test extensions.
 
 To learn more about zem, [see documentation](https://github.com/zeplin/zem).
+
+Flutter extension is open source, you can find it on github(https://github.com/johngray1965/FlutterZeplinExtension).
 
