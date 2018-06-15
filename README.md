@@ -4,23 +4,22 @@ Generates Flutter dart snippets from colors, text styles, layers.
 
 Sample color output:
 ```dart
-class colors {
-        
+class Colors {
   static const medium_blue = const Color(0xff2e72b6);
   static const dull_orange = const Color(0xffdda831);
   static const greyish_brown = const Color(0xff585858);
   static const black = const Color(0xff0c0c0c);
   static const white = const Color(0xffffffff);
-        
-}
-```
+  static const black_two = const Color(0xff000000);
+  static const black_three = const Color(0xff020202);
+}```
 
 Sample text style output:
 ```dart
-class styles {
+class Styles {
         
   static const listPrice = const TextStyle(
-    color:  colors.black,
+    color:  Colors.black,
     fontWeight: FontWeight.w700,
     fontFamily: "Arimo",
     fontStyle:  FontStyle.normal,
@@ -28,7 +27,7 @@ class styles {
   );
 
   static const listTitle = const TextStyle(
-    color:  colors.black,
+    color:  Colors.black,
     fontWeight: FontWeight.w400,
     fontFamily: "Arimo",
     fontStyle:  FontStyle.normal,
@@ -36,7 +35,7 @@ class styles {
   );
 
   static const buttonTextStyle = const TextStyle(
-    color:  colors.white,
+    color:  Colors.white,
     fontWeight: FontWeight.w400,
     fontFamily: "Arimo",
     fontStyle:  FontStyle.normal,
@@ -44,7 +43,7 @@ class styles {
   );
 
   static const subTitle = const TextStyle(
-    color:  colors.black,
+    color:  Colors.black,
     fontWeight: FontWeight.w400,
     fontFamily: "Arimo",
     fontStyle:  FontStyle.normal,
@@ -58,7 +57,7 @@ Sample layer output:
 ```dart
 new Text(
    "Some Random Text",
-   style: styles.subTitle);
+   style: Styles.subTitle);
 ```
 
 ## Options:
@@ -73,5 +72,5 @@ Flutter extension is developed using [zem](https://github.com/zeplin/zem), Zepli
 
 To learn more about zem, [see documentation](https://github.com/zeplin/zem).
 
-Flutter extension is open source, you can find it on github(https://github.com/johngray1965/FlutterZeplinExtension).
+Flutter extension is open source, you can find it on [github](https://github.com/johngray1965/FlutterZeplinExtension).
 
