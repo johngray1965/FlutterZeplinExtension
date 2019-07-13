@@ -6,11 +6,21 @@
     "start": "zem start",
     "build": "zem build",
     "clean": "zem clean",
-    "exec": "zem exec"
+    "exec": "zem exec",
+    "build:test": "zem build --dev",
+    "test": "npm run build:test && jest --testURL http://localhost && npm run clean",
+    "publish": "zem publish"
   },
+  "devDependencies": {
+    "@zeplin/eslint-config": "^1.2.2",
+    "@zeplin/extension-model": "^2.3.0",
+    "eslint": "^6.0.1",
+    "jest": "^22.1.4",
+    "zem": "^0.4.3"
+    },
   "zeplin": {
     "displayName": "Flutter",
-    "projectTypes": [
+    "platforms": [
       "android",
       "ios"
     ],
@@ -21,10 +31,26 @@
         "id": "classPrefix",
         "default": ""
       }
+      {
+        "name": "Dimensions",
+        "type": "switch",
+        "id": "showDimensions",
+        "default": true
+      },
+      {
+        "name": "Default values",
+        "type": "switch",
+        "id": "showDefaultValues",
+        "default": true
+      },
+      {
+        "name": "Display resources from linked and parent styleguides",
+        "type": "switch",
+        "id": "useLinkedStyleguides",
+        "default": true
+      }
+
     ]
 
-  },
-  "dependencies": {
-    "zem": "^0.1.2"
   }
 }
