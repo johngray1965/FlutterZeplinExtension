@@ -1,7 +1,7 @@
 {
   "name": "flutter_extension",
-  "version": "0.1.1",
-  "description": "Generates Flutter classes from colors, text styles and text layers code",
+  "version": "1.0",
+  "description": "Generates Flutter classes from colors, text styles and layers code",
   "scripts": {
     "start": "zem start",
     "build": "zem build",
@@ -19,13 +19,13 @@
     "zem": "^0.4.3"
     },
   "author": {
-    "name": "Zeplin",
-    "email": "support@zeplin.io",
-    "url": "http://zeplin.io"
+    "name": "AgoraNet",
+    "email": "support@agora-net.com",
+    "url": "http://www.agora-net.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/zeplin/react-native-extension.git"
+    "url": "https://github.com/johngray1965/FlutterZeplinExtension.git"
   },
   "zeplin": {
     "displayName": "Flutter",
