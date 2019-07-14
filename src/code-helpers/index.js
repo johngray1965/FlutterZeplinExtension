@@ -29,7 +29,7 @@ function getStyleguideColorsCode(options, colors) {
     return `class ${getConfigName("Colors", options)} {\n${styleguideColorTexts.join(",\n")}\n};`;
 }
 
-function getStyle(options, containerAndType, style) {
+function getStyle(options, containerAndType, style, styleMap) {
     var { container, type } = containerAndType;
     var { useLinkedStyleguides, classPrefix, divisor } = options;
 
@@ -37,6 +37,11 @@ function getStyle(options, containerAndType, style) {
 
     if (divisor == null || divisor == 0) {
         divisor = 1;
+    }
+
+    var styleKey = JSON.stringify(style);
+    if (styleKey in styleMap) {
+        return `${getConfigName("TextStyles", options)}.${styleMap[styleKey]}`;
     }
 
 
@@ -83,17 +88,17 @@ function getStyleguideTextStylesCode(options, containerAndType, textStyles) {
 	});
 }
 
-function getTextSpan(options, containerAndType, content, textStyle) {
+function getTextSpan(options, containerAndType, content, textStyle, styleMap) {
     return `TextSpan(
-    style: ${getStyle(options, containerAndType, textStyle)},
+    style: ${getStyle(options, containerAndType, textStyle, styleMap)},
     text: "${content}")`;
 }
 
-function getTextSpans(options, containerAndType, content, textStyles) {
+function getTextSpans(options, containerAndType, content, textStyles, styleMap) {
     return textStyles.map( textStyle => {
         var str = content.substring(textStyle.range.start, textStyle.range.end+1);
 
-        return getTextSpan(options, containerAndType, str, textStyle.textStyle)
+        return getTextSpan(options, containerAndType, str, textStyle.textStyle, styleMap)
     });
 }
 
@@ -188,6 +193,24 @@ function getColorByMap(color, colorMap, options) {
     }
 }
 
+function getStyleMap(containerAndType, useLinkedStyleguides) {
+    var { container, type } = containerAndType;
+
+    var containerStyles = getResources(container, type, useLinkedStyleguides, "textStyles");
+    return containerStyles.reduce((styleMap, style) => {
+
+        var styleWithoutName = Object.assign({}, style);
+        delete styleWithoutName.name;
+        var styleString = JSON.stringify(styleWithoutName);
+        /*
+            We don't want to override already set keys because
+            colors are supplied from bottom to top (first from local styleguide then linked styleguide then styleguides from children to parent)
+        */
+       styleMap[styleString] = styleMap[styleString] ? styleMap[styleString] : camelize(style.name);
+        return styleMap;
+    }, {});
+}
+
 function getColorMap(containerAndType, useLinkedStyleguides) {
     var { container, type } = containerAndType;
 
@@ -204,6 +227,7 @@ function getLayerCode(containerAndType, layer, options) {
     }
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
+    var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
 
     var elements = []
     var code = "";
@@ -211,17 +235,17 @@ function getLayerCode(containerAndType, layer, options) {
 	if (layer.type == "text") {
         var content = layer.content
         if (layer.textStyles.length > 1) {
-            var textSpans = getTextSpans(options, containerAndType, content, layer.textStyles).join(",\n      ");
+            var textSpans = getTextSpans(options, containerAndType, content, layer.textStyles, styleMap).join(",\n      ");
             code = `RichText(
   text: TextSpan(
     children: [
       ${textSpans}
     ]
   )
-);`;
+)`;
          } else if (layer.textStyles.length == 1) {
 
-            var style = getStyle(options, containerAndType, layer.textStyles[0].textStyle);
+            var style = getStyle(options, containerAndType, layer.textStyles[0].textStyle, styleMap);
             // textStyle.textAlign : String Horizontal alignment of the text style, left, right, center, or justify.
             var alignment = layer.textStyles[0].textStyle.textAlign;
             code = `Text(
