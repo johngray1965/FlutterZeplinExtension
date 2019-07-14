@@ -18,6 +18,15 @@
     "jest": "^22.1.4",
     "zem": "^0.4.3"
     },
+  "author": {
+    "name": "Zeplin",
+    "email": "support@zeplin.io",
+    "url": "http://zeplin.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zeplin/react-native-extension.git"
+  },
   "zeplin": {
     "displayName": "Flutter",
     "platforms": [
