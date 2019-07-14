@@ -13,7 +13,7 @@ function component(context, selectedVersion, selectedComponent) {
         selectedComponent: selectedComponent
     };
 
-    //console.log(JSON.stringify(f));
+    //console.log(util.inspect(f));
     return JSON.stringify(JSON.stringify(f));
 }
 
@@ -24,7 +24,7 @@ function screen(context, selectedVersion, selectedScreen) {
         selectedScreen: selectedScreen
     };
 
-    //console.log(JSON.stringify(f));
+    //console.log(util.inspect(f));
     return JSON.stringify(JSON.stringify(f));
 }
 

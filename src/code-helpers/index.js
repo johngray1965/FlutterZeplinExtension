@@ -201,7 +201,8 @@ function getStyleMap(containerAndType, useLinkedStyleguides) {
 
         var styleWithoutName = Object.assign({}, style);
         delete styleWithoutName.name;
-        var styleString = JSON.stringify(styleWithoutName);
+        delete styleWithoutName.scaledFontSize;
+        var styleString = JSON.stringify(styleWithoutName).replace("\\", "");
         /*
             We don't want to override already set keys because
             colors are supplied from bottom to top (first from local styleguide then linked styleguide then styleguides from children to parent)
@@ -218,6 +219,19 @@ function getColorMap(containerAndType, useLinkedStyleguides) {
     return getColorMapByFormat(containerColors, null); // We only have one color format in Flutter
 }
 
+// const getCircularReplacer = () => {
+//     const seen = new WeakSet();
+//     return (key, value) => {
+//       if (typeof value === "object" && value !== null) {
+//         if (seen.has(value)) {
+//           return;
+//         }
+//         seen.add(value);
+//       }
+//       return value;
+//     };
+//   };
+
 function getLayerCode(containerAndType, layer, options) {
     var { container, type } = containerAndType;
     var { useLinkedStyleguides, classPrefix, divisor } = options;
@@ -225,6 +239,8 @@ function getLayerCode(containerAndType, layer, options) {
     if (divisor == null || divisor == 0) {
         divisor = 1;
     }
+
+    //console.log(layer, getCircularReplacer());
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
     var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
