@@ -14,6 +14,21 @@ function toHex(num) {
     return (num < HEX_BASE ? "0" : "") + num.toString(HEX_BASE);
 }
 
+function toFlutterHexString(color) {
+    var hexA = toHex(Math.round(color.a * MAX_BRIGHTNESS));
+
+    var hexR = toHex(color.r);
+    var hexG = toHex(color.g);
+    var hexB = toHex(color.b);
+
+    return `0x${hexA}${hexR}${hexG}${hexB}`;
+}
+
+
+function getColor(color) {
+    return `const Color(${toFlutterHexString(color)})`;
+}
+
 function blendColors(colors) {
     return colors.reduce((blendedColor, color) => blendedColor.blend(color));
 }
@@ -23,21 +38,15 @@ function getColorStringByFormat(color, colorFormat) {
         return;
     }
 
-    switch (colorFormat) {
-        case "hex":
-            return toHexString(color);
-
-        case "rgb":
-            return toRGBAString(color);
-
-        case "hsl":
-            return toHSLAString(color);
-
-        case "default":
-        default:
-            return toDefaultString(color);
-    }
+    return getColor(color);
 }
+
+function camelize(str) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+      if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+      return index == 0 ? match.toLowerCase() : match.toUpperCase();
+    }).replace("-","");
+  }
 
 function getColorMapByFormat(colors, colorFormat) {
     return colors.reduce((colorMap, color) => {
@@ -46,7 +55,7 @@ function getColorMapByFormat(colors, colorFormat) {
             We don't want to override already set keys because
             colors are supplied from bottom to top (first from local styleguide then linked styleguide then styleguides from children to parent)
         */
-        colorMap[colorString] = colorMap[colorString] ? colorMap[colorString] : color.name;
+        colorMap[colorString] = colorMap[colorString] ? colorMap[colorString] : camelize(color.name);
         return colorMap;
     }, {});
 }
@@ -94,5 +103,7 @@ export {
     blendColors,
     getColorMapByFormat,
     toDefaultString,
-    getColorStringByFormat
+    getColorStringByFormat,
+    getColor,
+    camelize
 };

@@ -23,8 +23,6 @@ export var HTML_TAGS = [
     "tfoot", "th", "thead", "time", "title", "tr", "track", "u", "ul", "var", "video", "wbr"
 ];
 export var OPTION_NAMES = {
-    COLOR_FORMAT: "colorFormat",
-    SHOW_DIMENSIONS: "showDimensions",
-    SHOW_DEFAULT_VALUES: "showDefaultValues",
+    CLASS_PREFIX: "classPrefix",
     USE_LINKED_STYLEGUIDES: "useLinkedStyleguides"
 };

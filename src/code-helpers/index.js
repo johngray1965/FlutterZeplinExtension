@@ -6,28 +6,12 @@ import {
     generateName,
     getColorMapByFormat,
     getColorStringByFormat,
-    getResources
+    getResources,
+    getColor,
+    camelize
 } from "../utils";
 
-import { REACT_RULES_WITH_COLOR, JSON_SPACING } from "../constants";
-
-var HEX_BASE = 16;
-var MAX_BRIGHTNESS = 255;
-
-function toHex(num) {
-    var hex = num.toString(HEX_BASE);
-    return hex.length == 1 ? "0" + hex : hex;
-}
-
-function toHexString(color) {
-    var hexA = toHex(Math.round(color.a * MAX_BRIGHTNESS));
-
-    var hexR = toHex(color.r);
-    var hexG = toHex(color.g);
-    var hexB = toHex(color.b);
-
-    return `0x${hexA}${hexR}${hexG}${hexB}`;
-}
+import { REACT_RULES_WITH_COLOR, JSON_SPACING, OPTION_NAMES } from "../constants";
 
 function getStyleguideColorTexts(colorFormat, colors) {
     return colors.map(color => {
@@ -35,34 +19,32 @@ function getStyleguideColorTexts(colorFormat, colors) {
             color,
             colorFormat
         );
-        return `  static const ${color.name} = const Color(${toHexString(color)})`;
+        return `  static const ${camelize(color.name)} = ${getColor(color)}`;
     });
 }
 
 function getStyleguideColorsCode(options, colors) {
     var { colorFormat } = options;
     var styleguideColorTexts = getStyleguideColorTexts(colorFormat, colors);
-    return `const colors = {\n${styleguideColorTexts.join(",\n")}\n};`;
-}
-
-//function getColor(context, color, force) {
-function getColor(color) {
-    //     var projectColor = context.project.findColorEqual(color)
-	// if (projectColor && !force) {
-	//     return `${getColorClassName(context)}.${projectColor.name}`
-	// } else {
-    return `const Color(${toHexString(color)})`;
-	// }
+    return `class ${getConfigName("Colors", options)} {\n${styleguideColorTexts.join(",\n")}\n};`;
 }
 
 function getStyle(options, containerAndType, style) {
-    var divisor = 1; //context.project.densityDivisor;
+    var { container, type } = containerAndType;
+    var { useLinkedStyleguides, classPrefix, divisor } = options;
+
+    var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
+
+    if (divisor == null || divisor == 0) {
+        divisor = 1;
+    }
+
 
     var elements = [];
 
     //return JSON.stringify(style, null, 2)
     if ('color' in style) {
-        elements.push(`    color:  ${getColor(style.color)}`);
+        elements.push(`    color:  ${getColorByMap(style.color, colorMap, options)}`);
     }
 
     if ('fontWeight' in style) {
@@ -86,24 +68,25 @@ ${elements.join(",\n")}
 )`;
 }
 
-function camelize(str) {
-    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
-      if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
-      return index == 0 ? match.toLowerCase() : match.toUpperCase();
-    });
-  }
+function getConfigName(baseName, options) {
+    var prefix = options[OPTION_NAMES.CLASS_PREFIX];
+    if (prefix != null) {
+        return `${prefix}${baseName}`
+    } else {
+        return baseName;
+    }
+}
   
 function getStyleguideTextStylesCode(options, containerAndType, textStyles) {
 	return textStyles.map(style => {
 		return `  static const ${camelize(style.name)} = ${getStyle(options, containerAndType, style)}`;
 	});
-
 }
 
 function getTextSpan(options, containerAndType, content, textStyle) {
     return `TextSpan(
-        style: ${getStyle(options, containerAndType, textStyle)},
-        text: "${content}")`;
+    style: ${getStyle(options, containerAndType, textStyle)},
+    text: "${content}")`;
 }
 
 function getTextSpans(options, containerAndType, content, textStyles) {
@@ -119,9 +102,9 @@ function handlePadding(code, rect) {
         return code;
     }
     return `Padding(
-        padding: EdgeInsets.only(top: ${rect.y}, left: ${rect.x}),
-        child: ${code},
-      )`;
+    padding: EdgeInsets.only(top: ${rect.y}, left: ${rect.x}),
+    child: ${code},
+)`;
 }
 
 function handleOpacity(code, opacity) {
@@ -129,9 +112,9 @@ function handleOpacity(code, opacity) {
         return code;
     }
     return `Opacity(
-        opacity : ${opacity},
-        child: ${code},
-      )`;
+    opacity : ${opacity},
+    child: ${code},
+)`;
 }
 // function handleRotation(code, rotation) {
 //     if (opacity == 1) {
@@ -143,20 +126,20 @@ function handleOpacity(code, opacity) {
 //       )`;
 // }
 
-function handleBorder(borderRadius, borders, fills) {
+function handleBorder(borderRadius, borders, fills, colorMap, options) {
     var attrs = [];
     if (borderRadius != 0) {
         attrs.push(`borderRadius: BorderRadius.all(
             Radius.circular(${borderRadius}) 
         )`);
     }
-    var color = getColor({r: 0, b: 0, g: 0, a: 255});
+    var color = getColorByMap({r: 0, b: 0, g: 0, a: 255}, colorMap, options);
     var width = 1;
     if (borders.length != 0) {
         var borderAttrs = [];
         var border = borders[0];
         if (border.fill.type == "color") {
-            color = getColor(border.fill.color);
+            color = getColorByMap(border.fill.color, colorMap, options);
             borderAttrs.push(`color: ${color}`)
         }
         if (border.thickness != null) {
@@ -167,7 +150,7 @@ function handleBorder(borderRadius, borders, fills) {
             ${borderAttrs.join(",\n")}
           )`)
     }
-    var fill = handleFill(fills);
+    var fill = handleFill(fills, colorMap, options);
     if (fill.length != 0) {
         attrs.push(fill);
     }
@@ -180,7 +163,7 @@ function handleBorder(borderRadius, borders, fills) {
     }
 }
 
-function handleFill(fills) {
+function handleFill(fills, colorMap, options) {
     if (fills.length == 0) {
         return ""
     }
@@ -189,7 +172,7 @@ function handleFill(fills) {
     if (fills.length != 0) {
         var fill = fills[0];
         if (fill.type == "color") {
-            color = getColor(fill.color);
+            color = getColorByMap(fill.color, colorMap, options);
         }
     }
     if (color == "") {
@@ -198,38 +181,37 @@ function handleFill(fills) {
     return `color: ${color},`
 }
 
+function getColorByMap(color, colorMap, options) {
+    var formattedColor = getColor(color);
+    if (formattedColor in colorMap) {
+        return `${getConfigName("Colors", options)}.${colorMap[formattedColor]}`;
+    }
+}
+
+function getColorMap(containerAndType, useLinkedStyleguides) {
+    var { container, type } = containerAndType;
+
+    var containerColors = getResources(container, type, useLinkedStyleguides, "colors");
+    return getColorMapByFormat(containerColors, null); // We only have one color format in Flutter
+}
+
 function getLayerCode(containerAndType, layer, options) {
     var { container, type } = containerAndType;
-    var { useLinkedStyleguides, showDimensions, colorFormat, defaultValues } = options;
+    var { useLinkedStyleguides, classPrefix, divisor } = options;
 
-    // var layerStyleRule = generateLayerStyleObject({
-    //     layer,
-    //     platform: container.type,
-    //     densityDivisor: container.densityDivisor,
-    //     showDimensions,
-    //     colorFormat,
-    //     defaultValues
-    // });
+    if (divisor == null || divisor == 0) {
+        divisor = 1;
+    }
 
-    // var cssObjects = [];
+    var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
 
-    // if (Object.keys(layerStyleRule).length > 1) {
-    //     cssObjects.unshift(layerStyleRule);
-    // }
-    var containerColors = getResources(container, type, useLinkedStyleguides, "colors");
-    // return cssObjects.map(cssObj =>
-    //     generateFlutterRule(
-    //         cssObj,
-    //         getColorMapByFormat(containerColors, options.colorFormat)
-    //     )
-    // ).join("\n\n");
     var elements = []
     var code = "";
 
 	if (layer.type == "text") {
         var content = layer.content
         if (layer.textStyles.length > 1) {
-            var textSpans = getTextSpans(container, type, content, layer.textStyles).join(",\n      ");
+            var textSpans = getTextSpans(options, containerAndType, content, layer.textStyles).join(",\n      ");
             code = `RichText(
   text: TextSpan(
     children: [
@@ -240,20 +222,30 @@ function getLayerCode(containerAndType, layer, options) {
          } else if (layer.textStyles.length == 1) {
 
             var style = getStyle(options, containerAndType, layer.textStyles[0].textStyle);
+            // textStyle.textAlign : String Horizontal alignment of the text style, left, right, center, or justify.
+            var alignment = layer.textStyles[0].textStyle.textAlign;
             code = `Text(
-    "${content}",
-    style: ${style});`;
+"${content}",
+textAlign: TextAlign.${alignment},
+style: ${style})`;
+         }
 
+         if (layer.rect.width != 0 && layer.rect.height != 0) {
+             code = `SizedBox(
+                width: ${layer.rect.width / divisor}.0,
+                height: ${layer.rect.height/ divisor}.0,
+                child: ${code}
+             )`
          }
 
          //return code;
     } else if (layer.type == "shape") {
-        var border = handleBorder(layer.borderRadius, layer.borders, layer.fills);
+        var border = handleBorder(layer.borderRadius, layer.borders, layer.fills, colorMap, options);
         code = `Container(
-            width: ${layer.rect.width}.0,
-            height: ${layer.rect.height}.0,
-            ${border}
-          )`;
+    width: ${layer.rect.width / divisor}.0,
+    height: ${layer.rect.height/ divisor}.0,
+    ${border}
+)`;
 
     // } else if (layer.type == "group") {
     }
@@ -263,7 +255,6 @@ function getLayerCode(containerAndType, layer, options) {
     // if (code.length != 0) {
     //     return code;
     // }
-
 
     return code; // + "\n\n" + "\'" + encodeURIComponent(JSON.stringify(layer, null, 2)) + "\'";
 }

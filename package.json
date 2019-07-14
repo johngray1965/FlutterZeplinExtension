@@ -30,18 +30,6 @@
         "type": "text",
         "id": "classPrefix",
         "default": ""
-      }
-      {
-        "name": "Dimensions",
-        "type": "switch",
-        "id": "showDimensions",
-        "default": true
-      },
-      {
-        "name": "Default values",
-        "type": "switch",
-        "id": "showDefaultValues",
-        "default": true
       },
       {
         "name": "Display resources from linked and parent styleguides",

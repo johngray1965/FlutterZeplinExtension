@@ -13,6 +13,7 @@ function component(context, selectedVersion, selectedComponent) {
         selectedComponent: selectedComponent
     };
 
+    //console.log(JSON.stringify(f));
     return JSON.stringify(JSON.stringify(f));
 }
 
@@ -23,6 +24,7 @@ function screen(context, selectedVersion, selectedScreen) {
         selectedScreen: selectedScreen
     };
 
+    //console.log(JSON.stringify(f));
     return JSON.stringify(JSON.stringify(f));
 }
 
@@ -30,7 +32,10 @@ function colors(context) {
     var useLinkedStyleguides = context.getOption(OPTION_NAMES.USE_LINKED_STYLEGUIDES);
     var { container, type } = getResourceContainer(context);
     var allColors = getResources(container, type, useLinkedStyleguides, "colors");
-    var options = { colorFormat: context.getOption(OPTION_NAMES.COLOR_FORMAT) };
+    var options = { 
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
+    };
     var code = getStyleguideColorsCode(options, allColors);
 
     return {
@@ -42,8 +47,8 @@ function colors(context) {
 function textStyles(context) {
     var options = {
         useLinkedStyleguides: context.getOption(OPTION_NAMES.USE_LINKED_STYLEGUIDES),
-        colorFormat: context.getOption(OPTION_NAMES.COLOR_FORMAT),
-        defaultValues: context.getOption(OPTION_NAMES.SHOW_DEFAULT_VALUES)
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
     };
     var containerAndType = getResourceContainer(context);
     var { container, type } = containerAndType;
@@ -60,9 +65,8 @@ function layer(context, selectedLayer) {
     var containerAndType = getResourceContainer(context);
     var options = {
         useLinkedStyleguides: context.getOption(OPTION_NAMES.USE_LINKED_STYLEGUIDES),
-        showDimensions: context.getOption(OPTION_NAMES.SHOW_DIMENSIONS),
-        colorFormat: context.getOption(OPTION_NAMES.COLOR_FORMAT),
-        defaultValues: context.getOption(OPTION_NAMES.SHOW_DEFAULT_VALUES)
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
     };
     var code = getLayerCode(containerAndType, selectedLayer, options);
 
@@ -82,7 +86,7 @@ function exportColors(context) {
 
     return {
         code: code,
-        filename: "colors.js",
+        filename: "colors.dart",
         language: "dart"
     };
 }
@@ -93,13 +97,16 @@ function exportTextStyles(context) {
 
     return {
         code: code,
-        filename: "fonts.js",
+        filename: "fonts.dart",
         language: "dart"
     };
 }
 
 function styleguideColors(context, colorsInProject) {
-    var options = { colorFormat: context.getOption(OPTION_NAMES.COLOR_FORMAT) };
+    var options = { 
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
+    };
     var code = getStyleguideColorsCode(options, colorsInProject);
     return {
         code,
@@ -109,8 +116,8 @@ function styleguideColors(context, colorsInProject) {
 
 function styleguideTextStyles(context, textStylesInProject) {
     var options = {
-        colorFormat: context.getOption(OPTION_NAMES.COLOR_FORMAT),
-        defaultValues: context.getOption(OPTION_NAMES.SHOW_DEFAULT_VALUES)
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
     };
     var containerAndType = getResourceContainer(context);
     var code = getStyleguideTextStylesCode(options, containerAndType, textStylesInProject);
@@ -125,7 +132,7 @@ function exportStyleguideColors(context, colorsInProject) {
     var code = codeObject.code;
     return {
         code,
-        filename: "colors.js",
+        filename: "colors.dart",
         language: "dart"
     };
 }
@@ -135,7 +142,7 @@ function exportStyleguideTextStyles(context, textStylesInProject) {
     var code = codeObject.code;
     return {
         code,
-        filename: "fonts.js",
+        filename: "fonts.dart",
         language: "dart"
     };
 }
