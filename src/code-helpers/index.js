@@ -8,7 +8,8 @@ import {
     getColorStringByFormat,
     getResources,
     getColor,
-    camelize
+    camelize,
+    debugLog
 } from "../utils";
 
 import { REACT_RULES_WITH_COLOR, JSON_SPACING, OPTION_NAMES } from "../constants";
@@ -40,7 +41,7 @@ function getStyle(options, containerAndType, style, styleMap) {
     }
 
     var styleKey = JSON.stringify(style);
-    if (styleKey in styleMap) {
+    if (styleMap != null && styleKey in styleMap) {
         return `${getConfigName("TextStyles", options)}.${styleMap[styleKey]}`;
     }
 
@@ -191,6 +192,7 @@ function getColorByMap(color, colorMap, options) {
     if (formattedColor in colorMap) {
         return `${getConfigName("Colors", options)}.${colorMap[formattedColor]}`;
     }
+    return formattedColor;
 }
 
 function getStyleMap(containerAndType, useLinkedStyleguides) {
@@ -219,19 +221,6 @@ function getColorMap(containerAndType, useLinkedStyleguides) {
     return getColorMapByFormat(containerColors, null); // We only have one color format in Flutter
 }
 
-// const getCircularReplacer = () => {
-//     const seen = new WeakSet();
-//     return (key, value) => {
-//       if (typeof value === "object" && value !== null) {
-//         if (seen.has(value)) {
-//           return;
-//         }
-//         seen.add(value);
-//       }
-//       return value;
-//     };
-//   };
-
 function getLayerCode(containerAndType, layer, options) {
     var { container, type } = containerAndType;
     var { useLinkedStyleguides, classPrefix, divisor } = options;
@@ -240,7 +229,7 @@ function getLayerCode(containerAndType, layer, options) {
         divisor = 1;
     }
 
-    //console.log(layer, getCircularReplacer());
+    debugLog(layer);
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
     var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
@@ -287,7 +276,8 @@ style: ${style})`;
     ${border}
 )`;
 
-    // } else if (layer.type == "group") {
+    } else if (layer.type == "group") {
+        debugLog(layer);
     }
 
     code = handlePadding(code, layer.rect)

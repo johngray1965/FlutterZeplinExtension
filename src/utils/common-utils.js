@@ -45,9 +45,29 @@ function selectorize(str) {
 
     return selectorizedStr && `.${selectorizedStr}`;
 }
+/* eslint-disable no-undef, no-console */
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return;
+        }
+        seen.add(value);
+      }
+      return value;
+    };
+  };
+
+  function debugLog(obj) {
+      console.log(obj, getCircularReplacer());
+  }
+/* eslint-enable no-undef, no-console */
+
 
 export {
     isHtmlTag,
     round,
-    selectorize
+    selectorize,
+    debugLog
 };

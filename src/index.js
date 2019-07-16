@@ -4,7 +4,7 @@ import {
     getLayerCode
 } from "./code-helpers";
 import { OPTION_NAMES } from "./constants";
-import { getResourceContainer, getResources } from "./utils";
+import { getResourceContainer, getResources, debugLog } from "./utils";
 
 function component(context, selectedVersion, selectedComponent) {
     var f = {
@@ -13,7 +13,7 @@ function component(context, selectedVersion, selectedComponent) {
         selectedComponent: selectedComponent
     };
 
-    //console.log(util.inspect(f));
+    debugLog(f);
     return JSON.stringify(JSON.stringify(f));
 }
 
@@ -24,7 +24,7 @@ function screen(context, selectedVersion, selectedScreen) {
         selectedScreen: selectedScreen
     };
 
-    //console.log(util.inspect(f));
+    debugLog(f);
     return JSON.stringify(JSON.stringify(f));
 }
 
