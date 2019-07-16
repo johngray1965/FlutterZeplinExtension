@@ -229,7 +229,7 @@ function getLayerCode(containerAndType, layer, options) {
         divisor = 1;
     }
 
-    debugLog(layer);
+    //debugLog(layer);
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
     var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
@@ -276,8 +276,8 @@ style: ${style})`;
     ${border}
 )`;
 
-    } else if (layer.type == "group") {
-        debugLog(layer);
+    // } else if (layer.type == "group") {
+    //     debugLog(layer);
     }
 
     code = handlePadding(code, layer.rect)

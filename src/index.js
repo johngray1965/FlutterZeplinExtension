@@ -13,7 +13,7 @@ function component(context, selectedVersion, selectedComponent) {
         selectedComponent: selectedComponent
     };
 
-    debugLog(f);
+    //debugLog(f);
     return JSON.stringify(JSON.stringify(f));
 }
 
@@ -24,7 +24,7 @@ function screen(context, selectedVersion, selectedScreen) {
         selectedScreen: selectedScreen
     };
 
-    debugLog(f);
+    //debugLog(f);
     return JSON.stringify(JSON.stringify(f));
 }
 
