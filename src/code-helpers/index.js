@@ -262,7 +262,7 @@ function processLayer(containerAndType, layer, options, child, usePositioned) {
         divisor = 1;
     }
 
-    debugLog(layer);
+    //debugLog(layer);
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
     var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
