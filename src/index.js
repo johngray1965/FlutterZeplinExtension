@@ -1,31 +1,50 @@
 import {
     getStyleguideColorsCode,
     getStyleguideTextStylesCode,
-    getLayerCode
+    getLayerCode,
+    getComponent,
+    getScreen
 } from "./code-helpers";
 import { OPTION_NAMES } from "./constants";
 import { getResourceContainer, getResources, debugLog } from "./utils";
 
+// for a component we'll emit a StatelessWidget
 function component(context, selectedVersion, selectedComponent) {
-    var f = {
-        contcext: context,
-        selectedVersion: selectedVersion,
-        selectedComponent: selectedComponent
+    // var f = {
+    //     contcext: context,
+    //     selectedVersion: selectedVersion,
+    //     selectedComponent: selectedComponent
+    // };
+    var containerAndType = getResourceContainer(context);
+    var options = {
+        useLinkedStyleguides: context.getOption(OPTION_NAMES.USE_LINKED_STYLEGUIDES),
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
+    };
+    var code = getComponent(containerAndType, selectedVersion, selectedComponent, options);
+
+    return {
+        code: code,
+        language: "dart"
     };
 
     //debugLog(f);
-    return JSON.stringify(JSON.stringify(f));
 }
 
+// for a screen we'll emit a StatelessWidget here too
 function screen(context, selectedVersion, selectedScreen) {
-    var f = {
-        contcext: context,
-        selectedVersion: selectedVersion,
-        selectedScreen: selectedScreen
+    var containerAndType = getResourceContainer(context);
+    var options = {
+        useLinkedStyleguides: context.getOption(OPTION_NAMES.USE_LINKED_STYLEGUIDES),
+        classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
+        divisor: context.project.densityDivisor
     };
+    var code = getScreen(containerAndType, selectedVersion, selectedScreen, options);
 
-    //debugLog(f);
-    return JSON.stringify(JSON.stringify(f));
+    return {
+        code: code,
+        language: "dart"
+    };
 }
 
 function colors(context) {

@@ -9,7 +9,8 @@ import {
     getResources,
     getColor,
     camelize,
-    debugLog
+    debugLog,
+    indent
 } from "../utils";
 
 import { REACT_RULES_WITH_COLOR, JSON_SPACING, OPTION_NAMES } from "../constants";
@@ -108,8 +109,18 @@ function handlePadding(code, rect) {
         return code;
     }
     return `Padding(
-    padding: EdgeInsets.only(top: ${rect.y}, left: ${rect.x}),
-    child: ${code},
+  padding: EdgeInsets.only(top: ${rect.y}, left: ${rect.x}),
+  child: 
+    ${indent(code)},
+)`;
+}
+
+function handlePositioned(code, rect) {
+    return `PositionedDirectional(
+  top: ${rect.y},
+  start: ${rect.x},
+  child: 
+    ${indent(code)},
 )`;
 }
 
@@ -118,8 +129,8 @@ function handleOpacity(code, opacity) {
         return code;
     }
     return `Opacity(
-    opacity : ${opacity},
-    child: ${code},
+  opacity : ${opacity},
+  child: ${indent(code)},
 )`;
 }
 // function handleRotation(code, rotation) {
@@ -132,12 +143,26 @@ function handleOpacity(code, opacity) {
 //       )`;
 // }
 
-function handleBorder(borderRadius, borders, fills, colorMap, options) {
+function handleGradient(gradient, colorMap, options) {
+    var colors = [];
+    var i;
+    for (i = 0; i < gradient.colorStops.length; i++) { 
+        debugLog(`gradient.colorStops[${i}].color = ${JSON.stringify(gradient.colorStops[i].color)}`);
+        colors.push(getColorByMap(gradient.colorStops[i].color, colorMap, options));
+    }
+
+    return `LinearGradient(
+  begin: Alignment(${gradient.from.x}, ${gradient.from.y}),
+  end: Alignment(${gradient.to.x}, ${gradient.to.y}),
+  colors: [${colors.join(", ")}])`;
+}
+
+function handleBoxDecoration(borderRadius, borders, fills, colorMap, options) {
     var attrs = [];
     if (borderRadius != 0) {
-        attrs.push(`borderRadius: BorderRadius.all(
-            Radius.circular(${borderRadius}) 
-        )`);
+        attrs.push(`  borderRadius: BorderRadius.all(
+  Radius.circular(${borderRadius}) 
+)`);
     }
     var color = getColorByMap({r: 0, b: 0, g: 0, a: 255}, colorMap, options);
     var width = 1;
@@ -146,11 +171,14 @@ function handleBorder(borderRadius, borders, fills, colorMap, options) {
         var border = borders[0];
         if (border.fill.type == "color") {
             color = getColorByMap(border.fill.color, colorMap, options);
-            borderAttrs.push(`color: ${color}`)
+            borderAttrs.push(`  color: ${color}`)
+        } else if (border.fill.type == "gradient") {
+            color = handleGradient(border.fill.gradient, colorMap, options);
+            borderAttrs.push(`  gradient: ${color}`)
         }
         if (border.thickness != null) {
             width = border.thickness;
-            borderAttrs.push(`width: ${width}`)
+            borderAttrs.push(`  width: ${width}`)
         }
         attrs.push(`border: Border.all(
             ${borderAttrs.join(",\n")}
@@ -161,9 +189,9 @@ function handleBorder(borderRadius, borders, fills, colorMap, options) {
         attrs.push(fill);
     }
     if (attrs.length > 0) {
-        return `decoration: new BoxDecoration(
-            ${attrs.join(",\n")}
-        ),`;
+        return `  decoration: BoxDecoration(
+${indent(attrs.join(",\n"))}
+)`;
     } else {
         return "";
     }
@@ -179,12 +207,16 @@ function handleFill(fills, colorMap, options) {
         var fill = fills[0];
         if (fill.type == "color") {
             color = getColorByMap(fill.color, colorMap, options);
+            if (color == "") {
+                return "";
+            }
+            return `  color: ${color}`;
+        } else if (fill.type == "gradient") {
+            color = handleGradient(fill.gradient, colorMap, options);
+            return `  gradient: ${color}`;
         }
     }
-    if (color == "") {
-        return "";
-    }
-    return `color: ${color},`
+    return "";
 }
 
 function getColorByMap(color, colorMap, options) {
@@ -221,7 +253,8 @@ function getColorMap(containerAndType, useLinkedStyleguides) {
     return getColorMapByFormat(containerColors, null); // We only have one color format in Flutter
 }
 
-function getLayerCode(containerAndType, layer, options) {
+// Generate the code for a single layer
+function processLayer(containerAndType, layer, options, child, usePositioned) {
     var { container, type } = containerAndType;
     var { useLinkedStyleguides, classPrefix, divisor } = options;
 
@@ -229,7 +262,7 @@ function getLayerCode(containerAndType, layer, options) {
         divisor = 1;
     }
 
-    //debugLog(layer);
+    debugLog(layer);
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
     var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
@@ -250,47 +283,151 @@ function getLayerCode(containerAndType, layer, options) {
 )`;
          } else if (layer.textStyles.length == 1) {
 
+            var attrs = [];
+            attrs.push(`"${content}"`);
             var style = getStyle(options, containerAndType, layer.textStyles[0].textStyle, styleMap);
+            attrs.push(`style: ${style}`);
             // textStyle.textAlign : String Horizontal alignment of the text style, left, right, center, or justify.
             var alignment = layer.textStyles[0].textStyle.textAlign;
+            if (alignment != null && alignment != "undefined") {
+                attrs.push(`textAlign: TextAlign.${alignment}`);
+            }
             code = `Text(
-"${content}",
-textAlign: TextAlign.${alignment},
-style: ${style})`;
+${attrs.join(",\n")}                
+)`;
          }
 
          if (layer.rect.width != 0 && layer.rect.height != 0) {
              code = `SizedBox(
-                width: ${layer.rect.width / divisor}.0,
-                height: ${layer.rect.height/ divisor}.0,
-                child: ${code}
+  width: ${layer.rect.width / divisor}.0,
+  height: ${layer.rect.height/ divisor}.0,
+  child: ${indent(code)}
              )`
          }
 
          //return code;
     } else if (layer.type == "shape") {
-        var border = handleBorder(layer.borderRadius, layer.borders, layer.fills, colorMap, options);
+        attrs = [];
+        attrs.push(`  width: ${layer.rect.width / divisor}.0`);
+        attrs.push(`  height: ${layer.rect.height/ divisor}.0`);
+    
+        var border = handleBoxDecoration(layer.borderRadius, layer.borders, layer.fills, colorMap, options);
+        if (border.length > 0) {
+            attrs.push(border);
+        }
+        var childWidget = "";
+        if (child != null) {
+            attrs.push(`  child: ${child}`);
+        }
         code = `Container(
-    width: ${layer.rect.width / divisor}.0,
-    height: ${layer.rect.height/ divisor}.0,
-    ${border}
+${attrs.join(",\n")}
 )`;
 
-    // } else if (layer.type == "group") {
-    //     debugLog(layer);
+    } else if (layer.type == "group") {
+        if (layer.layers.length > 1) {
+        var children = [];
+        var i;
+        for (i = 0; i < layer.layers.length; i++) { 
+            child = processLayer(containerAndType, layer.layers[i], options, null, true);
+            if (child.length > 0) {
+                children.push(indent(child));
+            }
+        }
+        code = `Stack(children: [
+${children.join(",\n")}
+])`;
+        } else {
+            code = processLayer(containerAndType, layer.layers[0], options);
+        }
+        if (layer.rect.width != 0 && layer.rect.height != 0) {
+            code = `SizedBox(
+ width: ${layer.rect.width / divisor}.0,
+ height: ${layer.rect.height/ divisor}.0,
+ child: ${indent(code)}
+            )`
+        }
+
     }
 
-    code = handlePadding(code, layer.rect)
+    if (usePositioned == null && code.length > 0) {
+        code = handlePadding(code, layer.rect)
+    }
     code = handleOpacity(code, layer.opacity)
     // if (code.length != 0) {
     //     return code;
     // }
+    if (usePositioned != null && code.length > 0) {
+        code = handlePositioned(code, layer.rect)
+    }
 
-    return code; // + "\n\n" + "\'" + encodeURIComponent(JSON.stringify(layer, null, 2)) + "\'";
+    if (code.length > 0) {
+        code = `// ${layer.name} \n` + code;
+    }
+
+
+    return code; // + "\n\n" + JSON.stringify(layer, null, 2);
+}
+
+function processLayerList(containerAndType, layers, options) {
+    if (layers.length == 1) {
+        return processLayer(containerAndType, layers[0], options);
+    } else if (layers.length == 2) {
+        var child = indent(processLayer(containerAndType, layers[1], options, null));
+        debugLog(`child ${child}`);
+        return processLayer(containerAndType, layers[0], options, child);
+    } else {
+        var children = [];
+        var i;
+        for (i = 1; i < layers.length; i++) { 
+            child = processLayer(containerAndType, layers[i], options, null, true);
+            if (child.length > 0) {
+                children.push(indent(child));
+            }
+        }
+        child = `Stack(children: [
+${children.join(",\n")}
+])`;
+        return processLayer(containerAndType, layers[0], options, child);
+    }
+  
+}
+// Handle a layer request.  This will call processLayer to 
+// generate the code for individual layers, and assemble
+// them
+function getLayerCode(containerAndType, layer, options) {
+    if (layer.version != null && layer.version.layers != null) {
+        return processLayerList(containerAndType, layer.version.layers, options);
+    } else {
+        return processLayer(containerAndType, layer, options);
+    }
+}
+
+function getComponent(containerAndType, selectedVersion, selectedComponent, options) {
+    var d = {
+        containerAndType: containerAndType,
+        selectedVersion: selectedVersion,
+        selectedComponent: selectedComponent,
+        options: options,
+    }
+    debugLog(d);
+    return processLayerList(containerAndType, selectedVersion.layers, options);
+}
+
+function getScreen(containerAndType, selectedVersion, selectedScreen, options) {
+    var d = {
+        containerAndType: containerAndType,
+        selectedVersion: selectedVersion,
+        selectedScreen: selectedScreen,
+        options: options,
+    }
+    debugLog(d);
+    return processLayerList(containerAndType, selectedVersion.layers, options);
 }
 
 export {
     getStyleguideColorsCode,
     getStyleguideTextStylesCode,
-    getLayerCode
+    getLayerCode,
+    getComponent,
+    getScreen,
 };

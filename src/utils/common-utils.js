@@ -64,10 +64,14 @@ const getCircularReplacer = () => {
   }
 /* eslint-enable no-undef, no-console */
 
+function indent(s) {
+    return s.replace(/^/gm, '  ')
+}
 
 export {
     isHtmlTag,
     round,
     selectorize,
-    debugLog
+    debugLog,
+    indent
 };
