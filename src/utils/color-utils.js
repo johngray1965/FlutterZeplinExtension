@@ -48,6 +48,13 @@ function camelize(str) {
     }).replace("-","");
   }
 
+function pascalize(str) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+      if (+match === 0) return ""; // or if (/\s+/.test(match)) for white spaces
+      return match.toUpperCase();
+    }).replace(/-/g,"").replace(/\//g, "");
+  }
+
 function getColorMapByFormat(colors, colorFormat) {
     return colors.reduce((colorMap, color) => {
         var colorString = getColorStringByFormat(color, colorFormat);
@@ -105,5 +112,6 @@ export {
     toDefaultString,
     getColorStringByFormat,
     getColor,
-    camelize
+    camelize,
+    pascalize
 };

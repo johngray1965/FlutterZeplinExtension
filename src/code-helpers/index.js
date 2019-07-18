@@ -9,6 +9,7 @@ import {
     getResources,
     getColor,
     camelize,
+    pascalize,
     debugLog,
     indent
 } from "../utils";
@@ -410,7 +411,7 @@ function getComponent(containerAndType, selectedVersion, selectedComponent, opti
         options: options,
     }
     debugLog(d);
-    return processLayerList(containerAndType, selectedVersion.layers, options);
+    return generateStatelessWidget(selectedComponent.name, processLayerList(containerAndType, selectedVersion.layers, options));
 }
 
 function getScreen(containerAndType, selectedVersion, selectedScreen, options) {
@@ -421,7 +422,19 @@ function getScreen(containerAndType, selectedVersion, selectedScreen, options) {
         options: options,
     }
     debugLog(d);
-    return processLayerList(containerAndType, selectedVersion.layers, options);
+    return generateStatelessWidget(selectedScreen.name, processLayerList(containerAndType, selectedVersion.layers, options));
+
+}
+
+function generateStatelessWidget(name, child) {
+    return `
+class ${pascalize(name)} extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ${indent(indent(indent(child)))};
+  }
+}
+`;
 }
 
 export {
