@@ -148,7 +148,7 @@ function handleGradient(gradient, colorMap, options) {
     var colors = [];
     var i;
     for (i = 0; i < gradient.colorStops.length; i++) { 
-        debugLog(`gradient.colorStops[${i}].color = ${JSON.stringify(gradient.colorStops[i].color)}`);
+        //debugLog(`gradient.colorStops[${i}].color = ${JSON.stringify(gradient.colorStops[i].color)}`);
         colors.push(getColorByMap(gradient.colorStops[i].color, colorMap, options));
     }
 
@@ -263,6 +263,10 @@ function processLayer(containerAndType, layer, options, child, usePositioned) {
         divisor = 1;
     }
 
+    if (layer == null) {
+        return "";
+    }
+
     //debugLog(layer);
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
@@ -300,8 +304,8 @@ ${attrs.join(",\n")}
 
          if (layer.rect.width != 0 && layer.rect.height != 0) {
              code = `SizedBox(
-  width: ${layer.rect.width / divisor}.0,
-  height: ${layer.rect.height/ divisor}.0,
+  width: ${layer.rect.width / divisor},
+  height: ${layer.rect.height/ divisor},
   child: ${indent(code)}
              )`
          }
@@ -309,8 +313,8 @@ ${attrs.join(",\n")}
          //return code;
     } else if (layer.type == "shape") {
         attrs = [];
-        attrs.push(`  width: ${layer.rect.width / divisor}.0`);
-        attrs.push(`  height: ${layer.rect.height/ divisor}.0`);
+        attrs.push(`  width: ${layer.rect.width / divisor}`);
+        attrs.push(`  height: ${layer.rect.height/ divisor}`);
     
         var border = handleBoxDecoration(layer.borderRadius, layer.borders, layer.fills, colorMap, options);
         if (border.length > 0) {
@@ -342,8 +346,8 @@ ${children.join(",\n")}
         }
         if (layer.rect.width != 0 && layer.rect.height != 0) {
             code = `SizedBox(
- width: ${layer.rect.width / divisor}.0,
- height: ${layer.rect.height/ divisor}.0,
+ width: ${layer.rect.width / divisor},
+ height: ${layer.rect.height/ divisor},
  child: ${indent(code)}
             )`
         }
@@ -374,7 +378,7 @@ function processLayerList(containerAndType, layers, options) {
         return processLayer(containerAndType, layers[0], options);
     } else if (layers.length == 2) {
         var child = indent(processLayer(containerAndType, layers[1], options, null));
-        debugLog(`child ${child}`);
+        //debugLog(`child ${child}`);
         return processLayer(containerAndType, layers[0], options, child);
     } else {
         var children = [];
@@ -396,8 +400,10 @@ ${children.join(",\n")}
 // generate the code for individual layers, and assemble
 // them
 function getLayerCode(containerAndType, layer, options) {
-    if (layer.version != null && layer.version.layers != null) {
-        return processLayerList(containerAndType, layer.version.layers, options);
+    //debugLog(layer);
+
+    if (layer.parent != null && layer.parent.layers != null) {
+        return processLayerList(containerAndType, layer.parent.layers, options);
     } else {
         return processLayer(containerAndType, layer, options);
     }
@@ -410,19 +416,25 @@ function getComponent(containerAndType, selectedVersion, selectedComponent, opti
         selectedComponent: selectedComponent,
         options: options,
     }
-    debugLog(d);
+    //debugLog(d);
     return generateStatelessWidget(selectedComponent.name, processLayerList(containerAndType, selectedVersion.layers, options));
 }
 
 function getScreen(containerAndType, selectedVersion, selectedScreen, options) {
-    var d = {
-        containerAndType: containerAndType,
-        selectedVersion: selectedVersion,
-        selectedScreen: selectedScreen,
-        options: options,
+    var handleScreens = options[OPTION_NAMES.HANDLE_SCREENS];
+
+    if (handleScreens == true) {
+        var d = {
+            containerAndType: containerAndType,
+            selectedVersion: selectedVersion,
+            selectedScreen: selectedScreen,
+            options: options,
+        }
+        //debugLog(d);
+        return generateStatelessWidget(selectedScreen.name, processLayerList(containerAndType, selectedVersion.layers, options));
+    } else {
+        return "";
     }
-    debugLog(d);
-    return generateStatelessWidget(selectedScreen.name, processLayerList(containerAndType, selectedVersion.layers, options));
 
 }
 

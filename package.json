@@ -41,6 +41,12 @@
         "default": ""
       },
       {
+        "name": "Handle Screens?  Warning, this can be very cpu intensive",
+        "type": "switch",
+        "id": "handleScreens",
+        "default": false
+      },
+      {
         "name": "Display resources from linked and parent styleguides",
         "type": "switch",
         "id": "useLinkedStyleguides",
