@@ -37,7 +37,8 @@ function screen(context, selectedVersion, selectedScreen) {
     var options = {
         useLinkedStyleguides: context.getOption(OPTION_NAMES.USE_LINKED_STYLEGUIDES),
         classPrefix: context.getOption(OPTION_NAMES.CLASS_PREFIX),
-        divisor: context.project.densityDivisor
+        divisor: context.project.densityDivisor,
+        handleScreens: context.getOption(OPTION_NAMES.HANDLE_SCREENS)
     };
     var code = getScreen(containerAndType, selectedVersion, selectedScreen, options);
 
