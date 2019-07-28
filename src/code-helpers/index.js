@@ -412,6 +412,8 @@ function getLayerCode(containerAndType, layer, options) {
 
     if (layer.parent != null && layer.parent.layers != null) {
         return processLayerList(containerAndType, layer.parent.layers, options);
+    } else if (layer.version != null && layer.version.layers != null) {
+        return processLayerList(containerAndType, layer.version.layers, options);
     } else {
         return processLayer(containerAndType, layer, options);
     }
