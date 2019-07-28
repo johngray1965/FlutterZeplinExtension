@@ -255,7 +255,7 @@ function getColorMap(containerAndType, useLinkedStyleguides) {
 }
 
 // Generate the code for a single layer
-function processLayer(containerAndType, layer, options, child, usePositioned) {
+function processLayer(containerAndType, layer, options, child, usePositioned, useFullScreen) {
     var { container, type } = containerAndType;
     var { useLinkedStyleguides, classPrefix, divisor } = options;
 
@@ -313,8 +313,11 @@ ${attrs.join(",\n")}
          //return code;
     } else if (layer.type == "shape") {
         attrs = [];
-        attrs.push(`  width: ${layer.rect.width / divisor}`);
-        attrs.push(`  height: ${layer.rect.height/ divisor}`);
+
+        if (useFullScreen != true) {
+            attrs.push(`  width: ${layer.rect.width / divisor}`);
+            attrs.push(`  height: ${layer.rect.height/ divisor}`);
+        }
     
         var border = handleBoxDecoration(layer.borderRadius, layer.borders, layer.fills, colorMap, options);
         if (border.length > 0) {
@@ -327,6 +330,11 @@ ${attrs.join(",\n")}
         code = `Container(
 ${attrs.join(",\n")}
 )`;
+        if (useFullScreen == true) {
+            code = `Center(
+  child: ${code}
+)`
+        }
 
     } else if (layer.type == "group") {
         if (layer.layers.length > 1) {
@@ -361,7 +369,7 @@ ${children.join(",\n")}
     // if (code.length != 0) {
     //     return code;
     // }
-    if (usePositioned != null && code.length > 0) {
+    if (usePositioned == true && code.length > 0) {
         code = handlePositioned(code, layer.rect)
     }
 
@@ -373,13 +381,13 @@ ${children.join(",\n")}
     return code; // + "\n\n" + JSON.stringify(layer, null, 2);
 }
 
-function processLayerList(containerAndType, layers, options) {
+function processLayerList(containerAndType, layers, options, useFullScreen) {
     if (layers.length == 1) {
-        return processLayer(containerAndType, layers[0], options);
+        return processLayer(containerAndType, layers[0], options, false, useFullScreen);
     } else if (layers.length == 2) {
         var child = indent(processLayer(containerAndType, layers[1], options, null));
         //debugLog(`child ${child}`);
-        return processLayer(containerAndType, layers[0], options, child);
+        return processLayer(containerAndType, layers[0], options, child, false, useFullScreen);
     } else {
         var children = [];
         var i;
@@ -392,7 +400,7 @@ function processLayerList(containerAndType, layers, options) {
         child = `Stack(children: [
 ${children.join(",\n")}
 ])`;
-        return processLayer(containerAndType, layers[0], options, child);
+        return processLayer(containerAndType, layers[0], options, child, false, useFullScreen);
     }
   
 }
@@ -424,14 +432,14 @@ function getScreen(containerAndType, selectedVersion, selectedScreen, options) {
     var handleScreens = options[OPTION_NAMES.HANDLE_SCREENS];
 
     if (handleScreens == true) {
-        var d = {
-            containerAndType: containerAndType,
-            selectedVersion: selectedVersion,
-            selectedScreen: selectedScreen,
-            options: options,
-        }
+        // var d = {
+        //     containerAndType: containerAndType,
+        //     selectedVersion: selectedVersion,
+        //     selectedScreen: selectedScreen,
+        //     options: options,
+        // }
         //debugLog(d);
-        return generateStatelessWidget(selectedScreen.name, processLayerList(containerAndType, selectedVersion.layers, options));
+        return generateStatelessWidget(selectedScreen.name, processLayerList(containerAndType, selectedVersion.layers, options, true));
     } else {
         return "";
     }
