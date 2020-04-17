@@ -1,6 +1,6 @@
 # Zeplin Flutter Extension
 
-Generates Flutter dart snippets from colors, text styles, layers.
+Generates Flutter code for many aspects for your design.
 
 Sample color output:
 ```dart

@@ -158,7 +158,15 @@ function handleGradient(gradient, colorMap, options) {
   colors: [${colors.join(", ")}])`;
 }
 
-function handleBoxDecoration(borderRadius, borders, fills, colorMap, options) {
+function handleBoxShadow(shadow, colorMap, options) {
+    return `BoxShadow(
+        color: ${getColorByMap(shadow.color, colorMap, options)},
+        offset: Offset(${shadow.offsetX},${shadow.offsetY}),
+        blurRadius: ${shadow.blurRadius},
+        spreadRadius: ${shadow.spread}
+    )`;
+}
+function handleBoxDecoration(borderRadius, borders, fills, shadows, colorMap, options) {
     var attrs = [];
     if (borderRadius != 0) {
         attrs.push(`  borderRadius: BorderRadius.all(
@@ -173,9 +181,9 @@ function handleBoxDecoration(borderRadius, borders, fills, colorMap, options) {
         if (border.fill.type == "color") {
             color = getColorByMap(border.fill.color, colorMap, options);
             borderAttrs.push(`  color: ${color}`)
-        } else if (border.fill.type == "gradient") {
-            color = handleGradient(border.fill.gradient, colorMap, options);
-            borderAttrs.push(`  gradient: ${color}`)
+        // } else if (border.fill.type == "gradient") {
+        //     color = handleGradient(border.fill.gradient, colorMap, options);
+        //     borderAttrs.push(`  gradient: ${color}`)
         }
         if (border.thickness != null) {
             width = border.thickness;
@@ -185,6 +193,14 @@ function handleBoxDecoration(borderRadius, borders, fills, colorMap, options) {
             ${borderAttrs.join(",\n")}
           )`)
     }
+    if (shadows != null && shadows.length != 0) {
+        attrs.push(`  boxShadow: [${shadows.map(
+            shadow => {
+                return  handleBoxShadow(shadow, colorMap, options)
+            }
+            ).join(", ")}] `);
+    }
+
     var fill = handleFill(fills, colorMap, options);
     if (fill.length != 0) {
         attrs.push(fill);
@@ -258,6 +274,7 @@ function getColorMap(containerAndType, useLinkedStyleguides) {
 function processLayer(containerAndType, layer, options, child, usePositioned, useFullScreen) {
     var { container, type } = containerAndType;
     var { useLinkedStyleguides, classPrefix, divisor } = options;
+    var handleScreens = options[OPTION_NAMES.HANDLE_SCREENS];
 
     if (divisor == null || divisor == 0) {
         divisor = 1;
@@ -267,7 +284,9 @@ function processLayer(containerAndType, layer, options, child, usePositioned, us
         return "";
     }
 
-    //debugLog(layer);
+    debugLog("processLayer");
+
+    debugLog(layer);
 
     var colorMap = getColorMap(containerAndType, useLinkedStyleguides)
     var styleMap = getStyleMap(containerAndType, useLinkedStyleguides)
@@ -302,7 +321,7 @@ ${attrs.join(",\n")}
 )`;
          }
 
-         if (layer.rect.width != 0 && layer.rect.height != 0) {
+         if (layer.rect.width != 0 && layer.rect.height != 0 && handleScreens == true) {
              code = `SizedBox(
   width: ${layer.rect.width / divisor},
   height: ${layer.rect.height/ divisor},
@@ -319,9 +338,9 @@ ${attrs.join(",\n")}
             attrs.push(`  height: ${layer.rect.height/ divisor}`);
         }
     
-        var border = handleBoxDecoration(layer.borderRadius, layer.borders, layer.fills, colorMap, options);
-        if (border.length > 0) {
-            attrs.push(border);
+        var boxDecoration = handleBoxDecoration(layer.borderRadius, layer.borders, layer.fills, layer.shadows, colorMap, options);
+        if (boxDecoration.length > 0) {
+            attrs.push(boxDecoration);
         }
         var childWidget = "";
         if (child != null) {
@@ -330,6 +349,14 @@ ${attrs.join(",\n")}
         code = `Container(
 ${attrs.join(",\n")}
 )`;
+
+        if (layer.rotation != 0) {
+            code = `Transform.rotate(
+                angle: ${layer.rotation * Math.PI/180},
+                child: ${code}
+              )`
+         }
+
         if (useFullScreen == true) {
             code = `Center(
   child: ${code}
@@ -352,7 +379,7 @@ ${children.join(",\n")}
         } else {
             code = processLayer(containerAndType, layer.layers[0], options);
         }
-        if (layer.rect.width != 0 && layer.rect.height != 0) {
+        if (layer.rect.width != 0 && layer.rect.height != 0 && handleScreens == true) {
             code = `SizedBox(
  width: ${layer.rect.width / divisor},
  height: ${layer.rect.height/ divisor},
@@ -362,7 +389,7 @@ ${children.join(",\n")}
 
     }
 
-    if (usePositioned == null && code.length > 0) {
+    if (usePositioned == null && code.length > 0 && handleScreens == true) {
         code = handlePadding(code, layer.rect)
     }
     code = handleOpacity(code, layer.opacity)
@@ -382,13 +409,17 @@ ${children.join(",\n")}
 }
 
 function processLayerList(containerAndType, layers, options, useFullScreen) {
+    debugLog("processLayerList\n");
     if (layers.length == 1) {
+        debugLog("processLayerList A\n");
         return processLayer(containerAndType, layers[0], options, false, useFullScreen);
     } else if (layers.length == 2) {
+        debugLog("processLayerList B\n");
         var child = indent(processLayer(containerAndType, layers[1], options, null));
         //debugLog(`child ${child}`);
         return processLayer(containerAndType, layers[0], options, child, false, useFullScreen);
     } else {
+        debugLog("processLayerList C\n");
         var children = [];
         var i;
         for (i = 1; i < layers.length; i++) { 
@@ -408,13 +439,20 @@ ${children.join(",\n")}
 // generate the code for individual layers, and assemble
 // them
 function getLayerCode(containerAndType, layer, options) {
-    //debugLog(layer);
 
-    if (layer.parent != null && layer.parent.layers != null) {
+    var handleScreens = options[OPTION_NAMES.HANDLE_SCREENS];
+
+    debugLog("getLayerCode\n");
+
+    debugLog(layer);
+
+    if (layer.parent != null && layer.parent.layers != null && handleScreens == true) {
         return processLayerList(containerAndType, layer.parent.layers, options);
-    } else if (layer.version != null && layer.version.layers != null) {
+    } else if (layer.version != null && layer.version.layers != null && handleScreens == true) {
+        debugLog("getLayerCode A\n");
         return processLayerList(containerAndType, layer.version.layers, options);
     } else {
+        debugLog("getLayerCode B\n");
         return processLayer(containerAndType, layer, options);
     }
 }
@@ -426,7 +464,8 @@ function getComponent(containerAndType, selectedVersion, selectedComponent, opti
         selectedComponent: selectedComponent,
         options: options,
     }
-    //debugLog(d);
+    debugLog("getComponent");
+    debugLog(d);
     return generateStatelessWidget(selectedComponent.name, processLayerList(containerAndType, selectedVersion.layers, options));
 }
 
@@ -434,13 +473,14 @@ function getScreen(containerAndType, selectedVersion, selectedScreen, options) {
     var handleScreens = options[OPTION_NAMES.HANDLE_SCREENS];
 
     if (handleScreens == true) {
-        // var d = {
-        //     containerAndType: containerAndType,
-        //     selectedVersion: selectedVersion,
-        //     selectedScreen: selectedScreen,
-        //     options: options,
-        // }
-        //debugLog(d);
+        var d = {
+            containerAndType: containerAndType,
+            selectedVersion: selectedVersion,
+            selectedScreen: selectedScreen,
+            options: options,
+        }
+        debugLog("getScreen");
+        debugLog(d);
         return generateStatelessWidget(selectedScreen.name, processLayerList(containerAndType, selectedVersion.layers, options, true));
     } else {
         return "";

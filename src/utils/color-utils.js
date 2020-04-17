@@ -5,6 +5,8 @@ import {
     MAX_PERCENTAGE
 } from "../constants";
 
+//const toHexUtil = require('to-hex');
+
 var alphaFormatter = new Intl.NumberFormat("en-US", {
     useGrouping: false,
     maximumFractionDigits: 2
@@ -12,6 +14,7 @@ var alphaFormatter = new Intl.NumberFormat("en-US", {
 
 function toHex(num) {
     return (num < HEX_BASE ? "0" : "") + num.toString(HEX_BASE);
+    //return toHexUtil(num, {evenLength: true })
 }
 
 function toFlutterHexString(color) {
