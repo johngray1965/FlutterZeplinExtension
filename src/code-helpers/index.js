@@ -29,7 +29,7 @@ function getStyleguideColorTexts(colorFormat, colors) {
 function getStyleguideColorsCode(options, colors) {
     var { colorFormat } = options;
     var styleguideColorTexts = getStyleguideColorTexts(colorFormat, colors);
-    return `class ${getConfigName("Colors", options)} {\n${styleguideColorTexts.join(",\n")}\n};`;
+    return `class ${getConfigName("Colors", options)} {\n${styleguideColorTexts.join(";\n")};\n}`;
 }
 
 function getStyle(options, containerAndType, style, styleMap) {
@@ -84,11 +84,17 @@ function getConfigName(baseName, options) {
         return baseName;
     }
 }
-  
-function getStyleguideTextStylesCode(options, containerAndType, textStyles) {
+
+function getStyleguideTextStylesCodes(options, containerAndType, textStyles) {
 	return textStyles.map(style => {
 		return `  static const ${camelize(style.name)} = ${getStyle(options, containerAndType, style)}`;
 	});
+}
+
+function getStyleguideTextStylesCode(options, containerAndType, textStyles) {
+    var { colorFormat } = options;
+    var styleguideColorTexts = getStyleguideTextStylesCodes(options, containerAndType, textStyles);
+    return `class ${getConfigName("TextStyles", options)} {\n\n${styleguideColorTexts.join(";\n\n")};\n}`;
 }
 
 function getTextSpan(options, containerAndType, content, textStyle, styleMap) {
