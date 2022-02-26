@@ -30,6 +30,7 @@
   "zeplin": {
     "displayName": "Flutter",
     "platforms": [
+      "web",
       "android",
       "ios"
     ],
